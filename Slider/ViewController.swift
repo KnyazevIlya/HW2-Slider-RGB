@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITextFieldDelegate {
 
     @IBOutlet var coloredView: UIView!
     
@@ -19,21 +19,39 @@ class ViewController: UIViewController {
     @IBOutlet var greenLabel: UILabel!
     @IBOutlet var blueLabel: UILabel!
     
-    
-    @IBOutlet var redValue: UILabel!
-    @IBOutlet var greenValue: UILabel!
-    @IBOutlet var blueValue: UILabel!
+    @IBOutlet var redInput: UITextField!
+    @IBOutlet var greenInput: UITextField!
+    @IBOutlet var blueInput: UITextField!
     
     var redCh: Float = 0
     var greenCh: Float = 0
     var blueCh: Float = 0
     
+    enum currentChanel{
+    case red, green, blue
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.redInput.delegate = self
+        self.greenInput.delegate = self
+        self.blueInput.delegate = self
         
-        setupSlider(slider: redSlider, color: .red, sateliteLabel: redValue)
-        setupSlider(slider: greenSlider, color: .green, sateliteLabel: greenValue)
-        setupSlider(slider: blueSlider, color: .blue, sateliteLabel: blueValue)
+        view.backgroundColor = .lightGray
+        coloredView.layer.cornerRadius = 20
+        
+        setupSlider(slider: redSlider, color: .red, sateliteLabel: redLabel)
+        setupSlider(slider: greenSlider, color: .green, sateliteLabel: greenLabel)
+        setupSlider(slider: blueSlider, color: .blue, sateliteLabel: blueLabel)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        return textField.resignFirstResponder()
+    }
+    
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.view.endEditing(true)
     }
      
 
@@ -53,20 +71,55 @@ class ViewController: UIViewController {
 
     @IBAction func updateRedCh() {
         redCh = redSlider.value
-        redValue.text = String(redCh)
+        redLabel.text = "R:" + String(round(100*redCh)/100)
         changeColor()
     }
     
     @IBAction func updateGreenCh() {
         greenCh = greenSlider.value
-        greenValue.text = String(greenCh)
+        greenLabel.text = "G:" + String(round(100*greenCh)/100)
         changeColor()
     }
     
     @IBAction func updateBlueCh() {
         blueCh = blueSlider.value
-        blueValue.text = String(blueCh)
+        blueLabel.text = "B:" + String(round(100*blueCh)/100)
         changeColor()
     }
+    
+    
+    func inputColor(input: UITextField, label: UILabel, slider: UISlider, chanel: currentChanel) {
+        let ch: Float
+        guard let txt = input.text, !txt.isEmpty else {return}
+        if let number = Float(txt) {
+            if number >= 0 && number <= 1 {
+                switch chanel {
+                case .red:
+                    redCh = number
+                    ch = redCh
+                case .green:
+                    greenCh = number
+                    ch = greenCh
+                case .blue:
+                    blueCh = number
+                    ch = blueCh
+                }
+                label.text = "R:" + String(round(100*ch)/100)
+                slider.setValue(ch, animated: false)
+                changeColor()
+            }
+        }
+    }
+    
+    @IBAction func inputRed() {
+        inputColor(input: redInput, label: redLabel, slider: redSlider, chanel: .red)
+    }
+    @IBAction func inputGreen() {
+        inputColor(input: greenInput, label: greenLabel, slider: greenSlider, chanel: .green)
+    }
+    @IBAction func inputBlue() {
+        inputColor(input: blueInput, label: blueLabel, slider: blueSlider, chanel: .blue)
+    }
+    
 }
 
